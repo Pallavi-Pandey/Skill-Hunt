@@ -124,7 +124,8 @@ Conversation:
     conv_text = "\n".join([f"{msg['role']}: {msg['content']}" for msg in conversation_history])
     
     try:
-        response = openai.ChatCompletion.create(
+        client = openai.OpenAI(api_key=openai.api_key)
+        response = client.chat.completions.create(
             model=MODEL,
             messages=[
                 {"role": "system", "content": extraction_prompt},
@@ -158,8 +159,11 @@ def get_bot_response(user_message):
         # Add current user message
         messages.append({"role": "user", "content": user_message})
         
+        # Create OpenAI client
+        client = openai.OpenAI(api_key=openai.api_key)
+        
         # Call OpenAI API
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model=MODEL,
             messages=messages,
             temperature=0.7,
@@ -168,11 +172,11 @@ def get_bot_response(user_message):
         
         return response.choices[0].message.content
     
-    except openai.error.AuthenticationError:
+    except openai.AuthenticationError:
         return "⚠️ Authentication error. Please check your OpenAI API key."
-    except openai.error.RateLimitError:
+    except openai.RateLimitError:
         return "⚠️ Rate limit reached. Please try again in a moment."
-    except openai.error.APIError as e:
+    except openai.APIError as e:
         return f"⚠️ OpenAI API error: {str(e)}"
     except Exception as e:
         return f"⚠️ An error occurred: {str(e)}"
