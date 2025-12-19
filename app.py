@@ -49,17 +49,6 @@ def initialize_session_state():
     """Initialize Streamlit session state variables."""
     if "messages" not in st.session_state:
         st.session_state.messages = []
-        st.session_state.candidate_info = {
-            "name": None,
-            "email": None,
-            "phone": None,
-            "experience": None,
-            "position": None,
-            "location": None,
-            "tech_stack": None
-        }
-        st.session_state.info_collected = False
-        st.session_state.questions_asked = False
         st.session_state.conversation_ended = False
         
         # Add greeting message
@@ -97,48 +86,6 @@ If your profile matches our current openings, we'll reach out to schedule a deta
 Best of luck with your job search! Feel free to return anytime if you have additional information to share.
 
 Goodbye! 👋"""
-
-
-def extract_candidate_info(conversation_history):
-    """
-    Use LLM to extract structured candidate information from conversation.
-    This is a fallback mechanism to ensure we capture all information.
-    """
-    extraction_prompt = """Based on the following conversation, extract the candidate information in JSON format.
-If information is not provided, use null for that field.
-
-Required fields:
-- name (Full Name)
-- email (Email Address)
-- phone (Phone Number)
-- experience (Years of Experience)
-- position (Desired Position)
-- location (Current Location)
-- tech_stack (Technologies, frameworks, languages, tools as a list)
-
-Return ONLY valid JSON, nothing else.
-
-Conversation:
-"""
-    
-    conv_text = "\n".join([f"{msg['role']}: {msg['content']}" for msg in conversation_history])
-    
-    try:
-        client = openai.OpenAI(api_key=openai.api_key)
-        response = client.chat.completions.create(
-            model=MODEL,
-            messages=[
-                {"role": "system", "content": extraction_prompt},
-                {"role": "user", "content": conv_text}
-            ],
-            temperature=0.3
-        )
-        
-        extracted = json.loads(response.choices[0].message.content)
-        return extracted
-    except Exception as e:
-        st.error(f"Error extracting information: {str(e)}")
-        return None
 
 
 def get_bot_response(user_message):
@@ -209,15 +156,15 @@ def display_chat_interface():
                 with st.chat_message("assistant"):
                     st.markdown(farewell)
                 st.rerun()
-            
-            # Get bot response
-            with st.chat_message("assistant"):
-                with st.spinner("Thinking..."):
-                    response = get_bot_response(prompt)
-                    st.markdown(response)
-            
-            # Add assistant response to chat history
-            st.session_state.messages.append({"role": "assistant", "content": response})
+            else:
+                # Get bot response only if not ending conversation
+                with st.chat_message("assistant"):
+                    with st.spinner("Thinking..."):
+                        response = get_bot_response(prompt)
+                        st.markdown(response)
+                
+                # Add assistant response to chat history
+                st.session_state.messages.append({"role": "assistant", "content": response})
             
             st.rerun()
     else:
