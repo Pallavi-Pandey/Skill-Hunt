@@ -194,8 +194,11 @@ def main():
         chatbot.start_interview()
     except KeyboardInterrupt:
         print("\n\nInterview interrupted. Thank you for your time!")
+    except (IOError, OSError) as e:
+        print(f"\n\nFile system error: {e}")
+        print("Please check permissions and try again.")
     except Exception as e:
-        print(f"\n\nAn error occurred: {e}")
+        print(f"\n\nAn unexpected error occurred: {e}")
         print("Please try again or contact support.")
 
 if __name__ == "__main__":

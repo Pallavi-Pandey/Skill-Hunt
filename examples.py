@@ -164,8 +164,13 @@ def main():
     for example_func in examples:
         try:
             example_func()
+        except KeyboardInterrupt:
+            print(f"\n⚠ Example interrupted by user")
+            break
+        except (ImportError, ModuleNotFoundError) as e:
+            print(f"\n❌ Example failed - missing dependency: {e}")
         except Exception as e:
-            print(f"\n❌ Example failed: {e}")
+            print(f"\n❌ Example failed with unexpected error: {e}")
     
     print("\n" + "="*70)
     print("   All Examples Completed   ".center(70))

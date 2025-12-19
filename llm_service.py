@@ -2,7 +2,7 @@
 LLM Service module for interacting with OpenAI API
 """
 from typing import List, Dict
-from openai import OpenAI
+from openai import OpenAI, OpenAIError
 from config import Config
 
 class LLMService:
@@ -72,9 +72,12 @@ Return only the questions, numbered 1 through {num_questions}."""
             
             return cleaned_questions[:num_questions]
             
-        except Exception as e:
+        except OpenAIError as e:
             print(f"Error generating questions with LLM: {e}")
-            return self._get_fallback_questions(tech_stack, experience_level)
+            return self._get_fallback_questions(tech_stack, experience_level, num_questions)
+        except Exception as e:
+            print(f"Unexpected error generating questions: {e}")
+            return self._get_fallback_questions(tech_stack, experience_level, num_questions)
     
     def evaluate_response(self, question: str, answer: str, tech_stack: List[str]) -> str:
         """
@@ -117,8 +120,11 @@ Provide a brief, constructive evaluation (2-3 sentences) covering:
             
             return response.choices[0].message.content.strip()
             
-        except Exception as e:
+        except OpenAIError as e:
             print(f"Error evaluating response: {e}")
+            return "Response recorded. (Evaluation error)"
+        except Exception as e:
+            print(f"Unexpected error during evaluation: {e}")
             return "Response recorded. (Evaluation error)"
     
     def generate_interview_summary(self, candidate_info: dict) -> str:
@@ -165,12 +171,18 @@ Technical Interview Responses:
             
             return response.choices[0].message.content.strip()
             
-        except Exception as e:
+        except OpenAIError as e:
             print(f"Error generating summary: {e}")
             return self._get_fallback_summary(candidate_info)
+        except Exception as e:
+            print(f"Unexpected error during summary generation: {e}")
+            return self._get_fallback_summary(candidate_info)
     
-    def _get_fallback_questions(self, tech_stack: List[str], experience_level: str) -> List[str]:
+    def _get_fallback_questions(self, tech_stack: List[str], experience_level: str, num_questions: int = None) -> List[str]:
         """Fallback questions when LLM is not available"""
+        if num_questions is None:
+            num_questions = Config.MIN_QUESTIONS_PER_STACK
+            
         questions = []
         
         for tech in tech_stack[:3]:  # Limit to first 3 technologies
@@ -185,7 +197,7 @@ Technical Interview Responses:
         questions.append("Describe your approach to debugging a production issue.")
         questions.append("How do you stay updated with the latest technologies in your field?")
         
-        return questions[:Config.MIN_QUESTIONS_PER_STACK]
+        return questions[:num_questions]
     
     def _get_fallback_summary(self, candidate_info: dict) -> str:
         """Fallback summary when LLM is not available"""

@@ -150,6 +150,11 @@ def run_demo():
 if __name__ == "__main__":
     try:
         run_demo()
+    except KeyboardInterrupt:
+        print("\n\n⚠ Demo interrupted by user")
+    except (ImportError, ModuleNotFoundError) as e:
+        print(f"\n❌ Missing dependency: {e}")
+        print("Please run: pip install -r requirements.txt")
     except Exception as e:
         print(f"\n❌ Demo error: {e}")
         import traceback
