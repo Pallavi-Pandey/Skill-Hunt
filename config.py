@@ -10,9 +10,9 @@ load_dotenv()
 class Config:
     """Configuration class for the chatbot"""
     
-    # OpenAI API Configuration
-    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
-    OPENAI_MODEL = os.getenv('OPENAI_MODEL', 'gpt-3.5-turbo')
+    # Gemini API Configuration
+    GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
+    GEMINI_MODEL = os.getenv('GEMINI_MODEL', 'gemini-1.5-flash')
     
     # Interview Settings
     MIN_QUESTIONS_PER_STACK = 3

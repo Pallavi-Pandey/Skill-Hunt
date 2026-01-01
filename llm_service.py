@@ -1,8 +1,8 @@
 """
-LLM Service module for interacting with OpenAI API
+LLM Service module for interacting with Google Gemini API
 """
 from typing import List, Dict
-from openai import OpenAI, OpenAIError
+import google.generativeai as genai
 from config import Config
 
 class LLMService:
@@ -10,13 +10,16 @@ class LLMService:
     
     def __init__(self):
         """Initialize the LLM service"""
-        self.client = OpenAI(api_key=Config.OPENAI_API_KEY) if Config.OPENAI_API_KEY else None
-        self.model = Config.OPENAI_MODEL
+        if Config.GEMINI_API_KEY:
+            genai.configure(api_key=Config.GEMINI_API_KEY)
+            self.model = genai.GenerativeModel(Config.GEMINI_MODEL)
+        else:
+            self.model = None
         self.conversation_history: List[Dict[str, str]] = []
         
     def is_available(self) -> bool:
         """Check if LLM service is available"""
-        return self.client is not None and Config.OPENAI_API_KEY != ''
+        return self.model is not None and Config.GEMINI_API_KEY != ''
     
     def generate_technical_questions(self, tech_stack: List[str], 
                                      experience_level: str,
@@ -49,17 +52,15 @@ Requirements:
 Return only the questions, numbered 1 through {num_questions}."""
 
         try:
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": "You are an experienced technical recruiter creating interview questions."},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.7,
-                max_tokens=1000
+            response = self.model.generate_content(
+                prompt,
+                generation_config=genai.types.GenerationConfig(
+                    temperature=0.7,
+                    max_output_tokens=1000
+                )
             )
             
-            questions_text = response.choices[0].message.content
+            questions_text = response.text
             questions = [q.strip() for q in questions_text.split('\n') if q.strip() and q.strip()[0].isdigit()]
             
             # Clean up the questions (remove numbering)
@@ -72,11 +73,8 @@ Return only the questions, numbered 1 through {num_questions}."""
             
             return cleaned_questions[:num_questions]
             
-        except OpenAIError as e:
-            print(f"Error generating questions with LLM: {e}")
-            return self._get_fallback_questions(tech_stack, experience_level, num_questions)
         except Exception as e:
-            print(f"Unexpected error generating questions: {e}")
+            print(f"Error generating questions with LLM: {e}")
             return self._get_fallback_questions(tech_stack, experience_level, num_questions)
     
     def evaluate_response(self, question: str, answer: str, tech_stack: List[str]) -> str:
@@ -92,7 +90,7 @@ Return only the questions, numbered 1 through {num_questions}."""
             Evaluation feedback
         """
         if not self.is_available():
-            return "Response recorded. (LLM evaluation unavailable - please configure OPENAI_API_KEY)"
+            return "Response recorded. (LLM evaluation unavailable - please configure GEMINI_API_KEY)"
         
         tech_list = ", ".join(tech_stack)
         
@@ -108,23 +106,18 @@ Provide a brief, constructive evaluation (2-3 sentences) covering:
 3. Any suggestions for improvement"""
 
         try:
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": "You are an experienced technical recruiter evaluating candidate responses."},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.5,
-                max_tokens=200
+            response = self.model.generate_content(
+                prompt,
+                generation_config=genai.types.GenerationConfig(
+                    temperature=0.5,
+                    max_output_tokens=200
+                )
             )
             
-            return response.choices[0].message.content.strip()
+            return response.text.strip()
             
-        except OpenAIError as e:
-            print(f"Error evaluating response: {e}")
-            return "Response recorded. (Evaluation error)"
         except Exception as e:
-            print(f"Unexpected error during evaluation: {e}")
+            print(f"Error evaluating response: {e}")
             return "Response recorded. (Evaluation error)"
     
     def generate_interview_summary(self, candidate_info: dict) -> str:
@@ -159,23 +152,18 @@ Technical Interview Responses:
 4. Hiring recommendation (Strong Yes/Yes/Maybe/No) with brief justification"""
 
         try:
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": "You are an experienced technical recruiter providing hiring recommendations."},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.5,
-                max_tokens=500
+            response = self.model.generate_content(
+                prompt,
+                generation_config=genai.types.GenerationConfig(
+                    temperature=0.5,
+                    max_output_tokens=500
+                )
             )
             
-            return response.choices[0].message.content.strip()
+            return response.text.strip()
             
-        except OpenAIError as e:
-            print(f"Error generating summary: {e}")
-            return self._get_fallback_summary(candidate_info)
         except Exception as e:
-            print(f"Unexpected error during summary generation: {e}")
+            print(f"Error generating summary: {e}")
             return self._get_fallback_summary(candidate_info)
     
     def _get_fallback_questions(self, tech_stack: List[str], experience_level: str, num_questions: int = None) -> List[str]:
@@ -208,5 +196,5 @@ Interview Summary:
 - Completed {len(candidate_info['responses'])} technical questions
 - Role: {candidate_info['preferred_role']}
 
-Note: Full AI-powered assessment unavailable. Please configure OPENAI_API_KEY for detailed analysis.
+Note: Full AI-powered assessment unavailable. Please configure GEMINI_API_KEY for detailed analysis.
 """

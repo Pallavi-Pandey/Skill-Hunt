@@ -4,7 +4,7 @@ A Streamlit-based intelligent chatbot for initial candidate screening.
 """
 
 import streamlit as st
-import openai
+import google.generativeai as genai
 import os
 from dotenv import load_dotenv
 import json
@@ -12,9 +12,12 @@ import json
 # Load environment variables
 load_dotenv()
 
-# Configure OpenAI
-openai.api_key = os.getenv("OPENAI_API_KEY", "")
-MODEL = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
+# Configure Gemini
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
 
 # Conversation ending keywords
 ENDING_KEYWORDS = ["goodbye", "bye", "exit", "quit", "end", "stop", "no thanks", "done"]
@@ -50,6 +53,12 @@ def initialize_session_state():
     if "messages" not in st.session_state:
         st.session_state.messages = []
         st.session_state.conversation_ended = False
+        st.session_state.chat = None
+        
+        # Initialize Gemini chat if API key is available
+        if GEMINI_API_KEY:
+            model = genai.GenerativeModel(MODEL, system_instruction=SYSTEM_PROMPT)
+            st.session_state.chat = model.start_chat(history=[])
         
         # Add greeting message
         greeting = get_greeting()
@@ -89,44 +98,37 @@ Goodbye! 👋"""
 
 
 def get_bot_response(user_message):
-    """Get response from the chatbot using OpenAI API."""
+    """Get response from the chatbot using Gemini API."""
     
     # Check if API key is configured
-    if not openai.api_key:
-        return "⚠️ OpenAI API key is not configured. Please set up your API key in the .env file."
+    if not GEMINI_API_KEY:
+        return "⚠️ Gemini API key is not configured. Please set up your API key in the .env file."
     
     try:
-        # Prepare conversation history for API call
-        messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+        # Use the chat session for multi-turn conversation
+        if st.session_state.chat is None:
+            model = genai.GenerativeModel(MODEL, system_instruction=SYSTEM_PROMPT)
+            st.session_state.chat = model.start_chat(history=[])
         
-        # Add conversation history
-        for msg in st.session_state.messages:
-            messages.append({"role": msg["role"], "content": msg["content"]})
-        
-        # Add current user message
-        messages.append({"role": "user", "content": user_message})
-        
-        # Create OpenAI client
-        client = openai.OpenAI(api_key=openai.api_key)
-        
-        # Call OpenAI API
-        response = client.chat.completions.create(
-            model=MODEL,
-            messages=messages,
-            temperature=0.7,
-            max_tokens=500
+        # Send message and get response
+        response = st.session_state.chat.send_message(
+            user_message,
+            generation_config=genai.types.GenerationConfig(
+                temperature=0.7,
+                max_output_tokens=500
+            )
         )
         
-        return response.choices[0].message.content
+        return response.text
     
-    except openai.AuthenticationError:
-        return "⚠️ Authentication error. Please check your OpenAI API key."
-    except openai.RateLimitError:
-        return "⚠️ Rate limit reached. Please try again in a moment."
-    except openai.APIError as e:
-        return f"⚠️ OpenAI API error: {str(e)}"
     except Exception as e:
-        return f"⚠️ An error occurred: {str(e)}"
+        error_msg = str(e)
+        if "API_KEY" in error_msg.upper() or "AUTHENTICATION" in error_msg.upper():
+            return "⚠️ Authentication error. Please check your Gemini API key."
+        elif "QUOTA" in error_msg.upper() or "RATE" in error_msg.upper():
+            return "⚠️ Rate limit reached. Please try again in a moment."
+        else:
+            return f"⚠️ An error occurred: {error_msg}"
 
 
 def display_chat_interface():
@@ -203,15 +205,15 @@ def display_sidebar():
         st.markdown("---")
         
         # API Status indicator
-        if openai.api_key:
+        if GEMINI_API_KEY:
             st.success("✅ API Connected")
         else:
             st.error("❌ API Key Missing")
-            st.info("Please configure your OpenAI API key in the .env file.")
+            st.info("Please configure your Gemini API key in the .env file.")
         
         st.markdown("---")
         st.markdown("**Version:** 1.0.0")
-        st.markdown("**Powered by:** OpenAI GPT")
+        st.markdown("**Powered by:** Google Gemini")
 
 
 def main():
