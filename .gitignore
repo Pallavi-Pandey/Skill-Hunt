@@ -1,9 +1,15 @@
+# Environment variables
+.env
+
 # Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
+env/
+venv/
+ENV/
 build/
 develop-eggs/
 dist/
@@ -20,15 +26,6 @@ wheels/
 .installed.cfg
 *.egg
 
-# Virtual Environment
-venv/
-ENV/
-env/
-
-# Environment Variables
-.env
-.env.local
-
 # IDE
 .vscode/
 .idea/
@@ -40,12 +37,9 @@ env/
 .DS_Store
 Thumbs.db
 
-# Streamlit
-.streamlit/secrets.toml
-
 # Logs
 *.log
 
-# Temporary files
-tmp/
-temp/
+# Interview data
+interviews/
+candidate_data/

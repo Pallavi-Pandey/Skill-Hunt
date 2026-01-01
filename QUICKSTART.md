@@ -1,169 +1,144 @@
-# Quick Start Guide
+# TalentScout - Quick Start Guide
 
-Get TalentScout Hiring Assistant up and running in 5 minutes!
+Get up and running with the TalentScout Hiring Assistant in minutes!
 
-## Prerequisites
-
-- Python 3.8 or higher
-- OpenAI API key ([Get one here](https://platform.openai.com/api-keys))
-
-## Installation (3 steps)
-
-### 1. Clone and Setup
+## 🚀 Quick Installation
 
 ```bash
-# Clone the repository
+# 1. Clone the repository
 git clone https://github.com/Pallavi-Pandey/Skill-Hunt.git
 cd Skill-Hunt
 
-# Create virtual environment (recommended)
-python -m venv venv
+# 2. Install dependencies
+pip install -r requirements.txt
 
-# Activate virtual environment
-# On macOS/Linux:
-source venv/bin/activate
-# On Windows:
-venv\Scripts\activate
+# 3. Run the demo
+python demo.py
+```
 
-# Install dependencies
+## 💡 Two Modes of Operation
+
+### Mode 1: Offline Mode (No API Key Required)
+Perfect for testing and evaluation. Uses preset questions.
+
+```bash
+python chatbot.py
+```
+
+### Mode 2: AI-Powered Mode (Recommended)
+Dynamic questions and real-time evaluation using OpenAI.
+
+```bash
+# 1. Set up your API key
+cp .env.example .env
+
+# 2. Edit .env and add your OpenAI API key
+# OPENAI_API_KEY=sk-your-key-here
+
+# 3. Run the chatbot
+python chatbot.py
+```
+
+## 📝 First Interview
+
+When you run `python chatbot.py`, you'll be guided through:
+
+1. **Basic Info** (30 seconds)
+   - Name, email, phone
+   - Years of experience
+   - Desired role
+
+2. **Tech Stack** (1 minute)
+   - List your technologies
+   - Example: "React, Node.js, MongoDB, Docker"
+
+3. **Technical Questions** (5-10 minutes)
+   - 3-5 questions based on your stack
+   - Questions adapt to your experience level
+   - Real-time feedback (with API key)
+
+4. **Summary** (automatic)
+   - Interview results saved to `interviews/` folder
+   - JSON format for easy integration
+
+## 🎯 Examples & Demos
+
+```bash
+# View comprehensive examples
+python examples.py
+
+# Run non-interactive demo
+python demo.py
+```
+
+## ⚙️ Configuration
+
+Edit `config.py` to customize:
+- Number of questions (MIN_QUESTIONS_PER_STACK)
+- Supported technologies (TECH_STACKS)
+- Experience levels (DIFFICULTY_LEVELS)
+
+## 🔧 Troubleshooting
+
+**"Module not found" error?**
+```bash
 pip install -r requirements.txt
 ```
 
-### 2. Configure API Key
+**API key not working?**
+- Check `.env` file exists
+- Verify key format: `OPENAI_API_KEY=sk-...`
+- Ensure you have API credits
 
-```bash
-# Copy the example environment file
-cp .env.example .env
+**Want to test without API key?**
+- Just run `python chatbot.py`
+- Works in offline mode automatically
 
-# Edit .env and add your OpenAI API key
-# On macOS/Linux:
-nano .env
-# On Windows:
-notepad .env
+## 📚 Learn More
 
-# Add your key:
-OPENAI_API_KEY=sk-your-actual-api-key-here
-```
+- Full documentation: `README.md`
+- Usage examples: `python examples.py`
+- Demo mode: `python demo.py`
 
-### 3. Run the Application
+## 🎓 Understanding LLM Integration
 
-```bash
-streamlit run app.py
-```
+The chatbot demonstrates LLM capabilities through:
 
-The app will open automatically in your browser at `http://localhost:8501`
+1. **Prompt Engineering**: Crafted prompts for question generation
+2. **Context Management**: Maintains interview state
+3. **Dynamic Responses**: Adapts to candidate's tech stack
+4. **Evaluation**: AI-powered feedback on answers
+5. **Graceful Fallback**: Works offline when needed
 
-## First Conversation
-
-1. **Start:** The chatbot will greet you and ask for your name
-2. **Provide Info:** Answer questions about:
-   - Name
-   - Email
-   - Phone
-   - Experience
-   - Desired position
-   - Location
-   - Tech stack (e.g., "Python, Django, React, PostgreSQL, Docker")
-3. **Answer Questions:** The bot will generate technical questions based on your tech stack
-4. **End:** Type "goodbye" or "bye" when done
-
-## Example Tech Stack Formats
+## 📊 Sample Output
 
 ```
-"Python, Django, PostgreSQL, Redis, Docker, AWS"
-"JavaScript, TypeScript, React, Node.js, MongoDB, Docker"
-"Java, Spring Boot, MySQL, Kafka, Kubernetes, Jenkins"
-"Go, Gin, PostgreSQL, RabbitMQ, Docker, AWS"
+   Welcome to TalentScout Hiring Assistant   
+
+--- Technical Interview ---
+
+Question 1/3:
+Explain the differences between REST and GraphQL APIs.
+Which would you choose for a real-time chat application?
+
+Your answer:
+> [Type your response here]
+
+💭 Evaluating your response...
+
+Feedback: Good explanation of the key differences. Your choice
+of GraphQL for real-time features shows understanding of
+subscriptions. Consider mentioning WebSockets as well.
 ```
 
-## Common Commands
+## 🎉 Next Steps
 
-```bash
-# Start the app
-streamlit run app.py
-
-# Start on different port
-streamlit run app.py --server.port=8502
-
-# Stop the app
-Ctrl + C (in terminal)
-
-# Update dependencies
-pip install -r requirements.txt --upgrade
-
-# Check Python version
-python --version
-
-# Check installed packages
-pip list | grep -E "streamlit|openai"
-```
-
-## Troubleshooting
-
-### "API key is not configured"
-- Check that `.env` file exists
-- Verify `OPENAI_API_KEY` is set in `.env`
-- Restart the application
-
-### "command not found: streamlit"
-```bash
-# Make sure virtual environment is activated
-source venv/bin/activate  # macOS/Linux
-venv\Scripts\activate     # Windows
-
-# Reinstall streamlit
-pip install streamlit
-```
-
-### Port already in use
-```bash
-# Use a different port
-streamlit run app.py --server.port=8502
-```
-
-### More issues?
-See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for detailed solutions.
-
-## Next Steps
-
-- Read [README.md](README.md) for complete documentation
-- Check [USAGE_EXAMPLES.md](USAGE_EXAMPLES.md) for conversation examples
-- Review [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for common issues
-
-## Quick Tips
-
-✅ **DO:**
-- Be specific about your tech stack
-- Provide complete contact information
-- Answer technical questions thoroughly
-- Use "goodbye" to end conversation gracefully
-
-❌ **DON'T:**
-- Share real personal information for testing
-- Commit your `.env` file to version control
-- Use production API keys for development
-- Expect instant responses (API calls take 2-5 seconds)
-
-## Features at a Glance
-
-| Feature | Status |
-|---------|--------|
-| Information Gathering | ✅ |
-| Tech Stack Analysis | ✅ |
-| Question Generation | ✅ |
-| Context Awareness | ✅ |
-| Graceful Exit | ✅ |
-| Error Handling | ✅ |
-| Clean UI | ✅ |
-| Secure Configuration | ✅ |
-
-## Support
-
-Need help?
-1. Check [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
-2. Review [README.md](README.md)
-3. Open a GitHub issue
+1. ✅ Run the demo: `python demo.py`
+2. ✅ Try the examples: `python examples.py`
+3. ✅ Start interviewing: `python chatbot.py`
+4. ✅ Configure API key for AI features
+5. ✅ Customize tech stacks in `config.py`
 
 ---
 
-**Happy Recruiting! 🎯**
+**Need Help?** Check the main README.md for detailed documentation!
