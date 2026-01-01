@@ -1,18 +1,20 @@
+"""
+TalentScout Hiring Assistant Chatbot
+A Streamlit-based intelligent chatbot for initial candidate screening.
+"""
+
 import streamlit as st
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 import os
 from dotenv import load_dotenv
-import json
 
 # Load environment variables
 load_dotenv()
 
 # Configure Gemini
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-MODEL = os.getenv("GEMINI_MODEL", "gemini-pro")
-
-if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
+MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
 
 # Conversation ending keywords
 ENDING_KEYWORDS = ["goodbye", "bye", "exit", "quit", "end", "stop", "no thanks", "done"]
@@ -43,17 +45,19 @@ SYSTEM_PROMPT = """You are a professional Hiring Assistant chatbot for TalentSco
 Remember: Stay focused on candidate screening, maintain context, and ensure all required information is collected before asking technical questions."""
 
 
+def get_client():
+    """Get Gemini client."""
+    if GEMINI_API_KEY:
+        return genai.Client(api_key=GEMINI_API_KEY)
+    return None
+
+
 def initialize_session_state():
     """Initialize Streamlit session state variables."""
     if "messages" not in st.session_state:
         st.session_state.messages = []
         st.session_state.conversation_ended = False
-        st.session_state.chat = None
-        
-        # Initialize Gemini chat if API key is available
-        if GEMINI_API_KEY:
-            model = genai.GenerativeModel(MODEL, system_instruction=SYSTEM_PROMPT)
-            st.session_state.chat = model.start_chat(history=[])
+        st.session_state.chat_history = []
         
         # Add greeting message
         greeting = get_greeting()
@@ -100,15 +104,31 @@ def get_bot_response(user_message):
         return "⚠️ Gemini API key is not configured. Please set up your API key in the .env file."
     
     try:
-        # Use the chat session for multi-turn conversation
-        if st.session_state.chat is None:
-            model = genai.GenerativeModel(MODEL, system_instruction=SYSTEM_PROMPT)
-            st.session_state.chat = model.start_chat(history=[])
+        client = get_client()
         
-        # Send message and get response
-        response = st.session_state.chat.send_message(
-            user_message,
-            generation_config=genai.types.GenerationConfig(
+        # Build conversation history for context
+        contents = []
+        
+        # Add previous messages to history
+        for msg in st.session_state.messages:
+            role = "user" if msg["role"] == "user" else "model"
+            contents.append(types.Content(
+                role=role,
+                parts=[types.Part.from_text(text=msg["content"])]
+            ))
+        
+        # Add current user message
+        contents.append(types.Content(
+            role="user",
+            parts=[types.Part.from_text(text=user_message)]
+        ))
+        
+        # Generate response
+        response = client.models.generate_content(
+            model=MODEL,
+            contents=contents,
+            config=types.GenerateContentConfig(
+                system_instruction=SYSTEM_PROMPT,
                 temperature=0.7,
                 max_output_tokens=500
             )
@@ -120,13 +140,13 @@ def get_bot_response(user_message):
         error_msg = str(e)
         print(f"Gemini API Error: {error_msg}")  # Log for debugging
         if "API_KEY" in error_msg.upper() or "AUTHENTICATION" in error_msg.upper() or "INVALID" in error_msg.upper():
-            return " Authentication error. Please check your Gemini API key."
+            return "⚠️ Authentication error. Please check your Gemini API key."
         elif "QUOTA" in error_msg.upper():
-            return " Quota exceeded. Please check your API usage limits."
+            return "⚠️ Quota exceeded. Please check your API usage limits."
         elif "RESOURCE_EXHAUSTED" in error_msg.upper():
-            return " Rate limit reached. Please try again in a moment."
+            return "⚠️ Rate limit reached. Please try again in a moment."
         else:
-            return f" Gemini API error: {error_msg}"
+            return f"⚠️ Gemini API error: {error_msg}"
 
 
 def display_chat_interface():
