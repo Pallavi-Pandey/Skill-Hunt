@@ -123,12 +123,15 @@ def get_bot_response(user_message):
     
     except Exception as e:
         error_msg = str(e)
-        if "API_KEY" in error_msg.upper() or "AUTHENTICATION" in error_msg.upper():
-            return "⚠️ Authentication error. Please check your Gemini API key."
-        elif "QUOTA" in error_msg.upper() or "RATE" in error_msg.upper():
-            return "⚠️ Rate limit reached. Please try again in a moment."
+        print(f"Gemini API Error: {error_msg}")  # Log for debugging
+        if "API_KEY" in error_msg.upper() or "AUTHENTICATION" in error_msg.upper() or "INVALID" in error_msg.upper():
+            return " Authentication error. Please check your Gemini API key."
+        elif "QUOTA" in error_msg.upper():
+            return " Quota exceeded. Please check your API usage limits."
+        elif "RESOURCE_EXHAUSTED" in error_msg.upper():
+            return " Rate limit reached. Please try again in a moment."
         else:
-            return f"⚠️ An error occurred: {error_msg}"
+            return f" Gemini API error: {error_msg}"
 
 
 def display_chat_interface():
