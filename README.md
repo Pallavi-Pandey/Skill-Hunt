@@ -138,9 +138,7 @@ The chatbot demonstrates understanding of Large Language Models through:
 ## 📊 Example Interview
 
 ```
-===================================================
    Welcome to TalentScout Hiring Assistant   
-===================================================
 
 Hello! I'm your AI-powered hiring assistant.
 I'll help screen your application for technology positions.

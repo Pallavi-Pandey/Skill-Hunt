@@ -113,9 +113,7 @@ The chatbot demonstrates LLM capabilities through:
 ## 📊 Sample Output
 
 ```
-===================================================
    Welcome to TalentScout Hiring Assistant   
-===================================================
 
 --- Technical Interview ---
 
