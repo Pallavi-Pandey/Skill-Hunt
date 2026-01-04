@@ -1,6 +1,6 @@
 # TalentScout - Intelligent Hiring Assistant 🤖
 
-An AI-powered chatbot for automating initial candidate screening in technology recruitment. Built for TalentScout, a fictional recruitment agency specializing in technology placements.
+An AI-powered chatbot for automating initial candidate screening in technology recruitment. Built for TalentScout, a fictional recruitment agency specializing in technology placements. 
 
 ## 🌟 Features
 
