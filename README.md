@@ -9,7 +9,7 @@ An AI-powered chatbot for automating initial candidate screening in technology r
 - **Experience-Level Awareness**: Adapts question difficulty based on years of experience (Junior/Mid-level/Senior)
 - **AI-Powered Evaluation**: Provides real-time feedback on candidate responses using LLMs
 - **Interview Summary**: Generates comprehensive hiring recommendations
-- **Data Persistence**: Saves interview data in structured JSON format
+- **Data Persistence**: Saves interview data in structured JSON format 
 - **Offline Mode**: Works without LLM with preset questions when API key is not configured
 
 ## 🛠️ Technologies Used
