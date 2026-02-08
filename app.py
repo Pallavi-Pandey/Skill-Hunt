@@ -4,10 +4,10 @@ A Streamlit-based intelligent chatbot for initial candidate screening.
 """
 
 import streamlit as st
-from google import genai
-from google.genai import types
 import os
 from dotenv import load_dotenv
+from llm_service import LLMService
+from utils import get_tech_stack_note, save_interview, is_exit_keyword
 
 # Load environment variables
 load_dotenv()
@@ -57,7 +57,7 @@ def initialize_session_state():
     if "messages" not in st.session_state:
         st.session_state.messages = []
         st.session_state.conversation_ended = False
-        st.session_state.chat_history = []
+        st.session_state.provider = "gemini"
         
         # Add greeting message
         greeting = get_greeting()
@@ -97,56 +97,62 @@ Goodbye! 👋"""
 
 
 def get_bot_response(user_message):
-    """Get response from the chatbot using Gemini API."""
+    """Get response from the chatbot using specified LLM provider."""
     
-    # Check if API key is configured
-    if not GEMINI_API_KEY:
-        return "⚠️ Gemini API key is not configured. Please set up your API key in the .env file."
+    llm_service = LLMService(provider=st.session_state.provider)
+    
+    if not llm_service.is_available():
+        return f"⚠️ {st.session_state.provider.capitalize()} API key is not configured. Please check your .env file."
     
     try:
-        client = get_client()
+        # Tech stack steering
+        system_note = get_tech_stack_note(user_message)
         
-        # Build conversation history for context
-        contents = []
-        
-        # Add previous messages to history
+        # Prepare context
+        context = []
         for msg in st.session_state.messages:
-            role = "user" if msg["role"] == "user" else "model"
-            contents.append(types.Content(
-                role=role,
-                parts=[types.Part.from_text(text=msg["content"])]
-            ))
+            context.append({"role": msg["role"], "content": msg["content"]})
         
-        # Add current user message
-        contents.append(types.Content(
-            role="user",
-            parts=[types.Part.from_text(text=user_message)]
-        ))
-        
-        # Generate response
-        response = client.models.generate_content(
-            model=MODEL,
-            contents=contents,
-            config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_PROMPT,
-                temperature=0.7,
-                max_output_tokens=500
+        if system_note:
+            context.append({"role": "system", "content": system_note})
+            
+        if st.session_state.provider == "gemini":
+            from google.genai import types
+            client = llm_service.gemini_client
+            contents = []
+            for msg in context:
+                role = "user" if msg["role"] == "user" else "model"
+                contents.append(types.Content(
+                    role=role,
+                    parts=[types.Part.from_text(text=msg["content"])]
+                ))
+            
+            response = client.models.generate_content(
+                model=os.getenv("GEMINI_MODEL", "gemini-2.0-flash"),
+                contents=contents,
+                config=types.GenerateContentConfig(
+                    system_instruction=SYSTEM_PROMPT,
+                    temperature=0.7,
+                    max_output_tokens=500
+                )
             )
-        )
-        
-        return response.text
-    
+            return response.text
+        else: # groq
+            from config import Config
+            client = llm_service.groq_client
+            messages_payload = [{"role": "system", "content": SYSTEM_PROMPT}] + context
+            
+            completion = client.chat.completions.create(
+                model=Config.GROQ_MODEL,
+                messages=messages_payload,
+                temperature=0.7,
+                max_tokens=500,
+            )
+            return completion.choices[0].message.content
+
     except Exception as e:
         error_msg = str(e)
-        print(f"Gemini API Error: {error_msg}")  # Log for debugging
-        if "API_KEY" in error_msg.upper() or "AUTHENTICATION" in error_msg.upper() or "INVALID" in error_msg.upper():
-            return "⚠️ Authentication error. Please check your Gemini API key."
-        elif "QUOTA" in error_msg.upper():
-            return "⚠️ Quota exceeded. Please check your API usage limits."
-        elif "RESOURCE_EXHAUSTED" in error_msg.upper():
-            return "⚠️ Rate limit reached. Please try again in a moment."
-        else:
-            return f"⚠️ Gemini API error: {error_msg}"
+        return f"⚠️ API error: {error_msg}"
 
 
 def display_chat_interface():
@@ -168,10 +174,13 @@ def display_chat_interface():
                 st.markdown(prompt)
             
             # Check for ending keywords
-            if check_ending_keyword(prompt):
+            if is_exit_keyword(prompt):
                 farewell = get_farewell_message()
                 st.session_state.messages.append({"role": "assistant", "content": farewell})
                 st.session_state.conversation_ended = True
+                
+                # Auto-save interview
+                save_interview(st.session_state.messages)
                 
                 with st.chat_message("assistant"):
                     st.markdown(farewell)
@@ -199,6 +208,15 @@ def display_sidebar():
         
         st.markdown("---")
         
+        # LLM Provider Selection
+        st.session_state.provider = st.selectbox(
+            "Select LLM Provider",
+            options=["gemini", "groq"],
+            index=0 if st.session_state.provider == "gemini" else 1
+        )
+        
+        st.markdown("---")
+        
         st.markdown("""
         ### About
         This intelligent chatbot assists with initial candidate screening by:
@@ -215,23 +233,51 @@ def display_sidebar():
         
         st.markdown("---")
         
-        # Reset conversation button
-        if st.button("🔄 Start New Conversation"):
-            st.session_state.clear()
+        # Controls
+        st.subheader("Controls")
+        if st.button("🗑️ Clear Chat"):
+            st.session_state.messages = []
+            st.session_state.conversation_ended = False
+            # Re-add greeting
+            greeting = get_greeting()
+            st.session_state.messages.append({
+                "role": "assistant",
+                "content": greeting
+            })
             st.rerun()
+            
+        if st.button("💾 Download Transcript"):
+            if st.session_state.messages:
+                filename = save_interview(st.session_state.messages)
+                st.success(f"Saved transcript!")
+                with open(filename, "r") as f:
+                    st.download_button(
+                        label="📥 Click to Download JSON",
+                        data=f,
+                        file_name=os.path.basename(filename),
+                        mime="application/json"
+                    )
+            else:
+                st.warning("No chat history to save.")
         
         st.markdown("---")
         
         # API Status indicator
-        if GEMINI_API_KEY:
-            st.success("✅ API Connected")
-        else:
-            st.error("❌ API Key Missing")
-            st.info("Please configure your Gemini API key in the .env file.")
+        from config import Config
+        if st.session_state.provider == "gemini":
+            if Config.GEMINI_API_KEY:
+                st.success("✅ Gemini Connected")
+            else:
+                st.error("❌ Gemini Key Missing")
+        else: # groq
+            if Config.GROQ_API_KEY:
+                st.success("✅ Groq Connected")
+            else:
+                st.error("❌ Groq Key Missing")
         
         st.markdown("---")
-        st.markdown("**Version:** 1.0.0")
-        st.markdown("**Powered by:** Google Gemini")
+        st.markdown(f"**Model:** `{Config.GEMINI_MODEL if st.session_state.provider == 'gemini' else Config.GROQ_MODEL}`")
+        st.markdown(f"**Powered by:** {st.session_state.provider.capitalize()}")
 
 
 def main():

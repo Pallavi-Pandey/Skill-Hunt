@@ -2,24 +2,34 @@
 LLM Service module for interacting with Google Gemini API
 """
 from typing import List, Dict
-import google.generativeai as genai
+from groq import Groq
 from config import Config
 
 class LLMService:
-    """Service class for LLM interactions"""
+    """Service class for LLM interactions supporting multiple providers"""
     
-    def __init__(self):
-        """Initialize the LLM service"""
+    def __init__(self, provider: str = "gemini"):
+        """Initialize the LLM service with a specific provider"""
+        self.provider = provider
+        self.gemini_client = None
+        self.groq_client = None
+        
         if Config.GEMINI_API_KEY:
             genai.configure(api_key=Config.GEMINI_API_KEY)
-            self.model = genai.GenerativeModel(Config.GEMINI_MODEL)
-        else:
-            self.model = None
+            self.gemini_client = genai.GenerativeModel(Config.GEMINI_MODEL)
+            
+        if Config.GROQ_API_KEY:
+            self.groq_client = Groq(api_key=Config.GROQ_API_KEY)
+            
         self.conversation_history: List[Dict[str, str]] = []
         
     def is_available(self) -> bool:
-        """Check if LLM service is available"""
-        return self.model is not None and Config.GEMINI_API_KEY != ''
+        """Check if selected LLM service is available"""
+        if self.provider == "gemini":
+            return self.gemini_client is not None
+        elif self.provider == "groq":
+            return self.groq_client is not None
+        return False
     
     def generate_technical_questions(self, tech_stack: List[str], 
                                      experience_level: str,
@@ -52,15 +62,24 @@ Requirements:
 Return only the questions, numbered 1 through {num_questions}."""
 
         try:
-            response = self.model.generate_content(
-                prompt,
-                generation_config=genai.types.GenerationConfig(
-                    temperature=0.7,
-                    max_output_tokens=1000
+            if self.provider == "gemini":
+                response = self.gemini_client.generate_content(
+                    prompt,
+                    generation_config=genai.types.GenerationConfig(
+                        temperature=0.7,
+                        max_output_tokens=1000
+                    )
                 )
-            )
+                questions_text = response.text
+            else:  # groq
+                completion = self.groq_client.chat.completions.create(
+                    model=Config.GROQ_MODEL,
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=0.7,
+                    max_tokens=1000,
+                )
+                questions_text = completion.choices[0].message.content
             
-            questions_text = response.text
             questions = [q.strip() for q in questions_text.split('\n') if q.strip() and q.strip()[0].isdigit()]
             
             # Clean up the questions (remove numbering)
@@ -106,15 +125,23 @@ Provide a brief, constructive evaluation (2-3 sentences) covering:
 3. Any suggestions for improvement"""
 
         try:
-            response = self.model.generate_content(
-                prompt,
-                generation_config=genai.types.GenerationConfig(
-                    temperature=0.5,
-                    max_output_tokens=200
+            if self.provider == "gemini":
+                response = self.gemini_client.generate_content(
+                    prompt,
+                    generation_config=genai.types.GenerationConfig(
+                        temperature=0.5,
+                        max_output_tokens=200
+                    )
                 )
-            )
-            
-            return response.text.strip()
+                return response.text.strip()
+            else:  # groq
+                completion = self.groq_client.chat.completions.create(
+                    model=Config.GROQ_MODEL,
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=0.5,
+                    max_tokens=200,
+                )
+                return completion.choices[0].message.content.strip()
             
         except Exception as e:
             print(f"Error evaluating response: {e}")
@@ -152,15 +179,23 @@ Technical Interview Responses:
 4. Hiring recommendation (Strong Yes/Yes/Maybe/No) with brief justification"""
 
         try:
-            response = self.model.generate_content(
-                prompt,
-                generation_config=genai.types.GenerationConfig(
-                    temperature=0.5,
-                    max_output_tokens=500
+            if self.provider == "gemini":
+                response = self.gemini_client.generate_content(
+                    prompt,
+                    generation_config=genai.types.GenerationConfig(
+                        temperature=0.5,
+                        max_output_tokens=500
+                    )
                 )
-            )
-            
-            return response.text.strip()
+                return response.text.strip()
+            else:  # groq
+                completion = self.groq_client.chat.completions.create(
+                    model=Config.GROQ_MODEL,
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=0.5,
+                    max_tokens=500,
+                )
+                return completion.choices[0].message.content.strip()
             
         except Exception as e:
             print(f"Error generating summary: {e}")
