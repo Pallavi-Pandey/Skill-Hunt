@@ -2,9 +2,6 @@
 
 An AI-powered recruitment companion that automates initial candidate screening for technology positions. Built with Streamlit and powered by advanced LLMs (Gemini & Groq), SkillHunt helps recruitment teams gather candidate info, assess technical proficiency, and generate insightful summaries.
 
-![SkillHunt Banner](https://img.shields.io/badge/AI-Powered-blueviolet?style=for-the-badge&logo=openai)
-![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=Streamlit&logoColor=white)
-![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
 
 ---
 
