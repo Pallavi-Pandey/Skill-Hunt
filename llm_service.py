@@ -2,6 +2,7 @@
 LLM Service module for interacting with Google Gemini API
 """
 from typing import List, Dict
+import google.generativeai as genai
 from groq import Groq
 from config import Config
 
