@@ -1,218 +1,132 @@
-# TalentScout - Intelligent Hiring Assistant
+# SkillHunt - Intelligent Hiring Assistant
 
-An AI-powered chatbot for automating initial candidate screening in technology recruitment. Built for TalentScout, a fictional recruitment agency specializing in technology placements. 
+An AI-powered recruitment companion that automates initial candidate screening for technology positions. Built with Streamlit and powered by advanced LLMs (Gemini & Groq), SkillHunt helps recruitment teams gather candidate info, assess technical proficiency, and generate insightful summaries.
 
-## 🌟 Features
+![SkillHunt Banner](https://img.shields.io/badge/AI-Powered-blueviolet?style=for-the-badge&logo=openai)
+![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=Streamlit&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
 
-- **Intelligent Candidate Screening**: Automatically collects essential candidate information
-- **Dynamic Technical Questions**: Generates personalized technical questions based on candidate's tech stack
-- **Experience-Level Awareness**: Adapts question difficulty based on years of experience (Junior/Mid-level/Senior)
-- **AI-Powered Evaluation**: Provides real-time feedback on candidate responses using LLMs
-- **Interview Summary**: Generates comprehensive hiring recommendations
-- **Data Persistence**: Saves interview data in structured JSON format 
-- **Offline Mode**: Works without LLM with preset questions when API key is not configured
+---
 
-## 🛠️ Technologies Used
+## Core Features
 
-- **Python 3.7+**: Core programming language
-- **OpenAI API**: Large Language Model integration for dynamic question generation and evaluation
-- **python-dotenv**: Environment variable management
+- **Interactive Chat Interface**: Modern, Streamlit-based UI for seamless candidate engagement.
+- **Multi-LLM Support**: Integrated with **Google Gemini 2.0 Flash** and **Groq (Llama 3.3 70B)** for high-performance reasoning.
+- **Intelligent Tech Stack Steering**: Automatically detects technologies mentioned (Python, Django, React, etc.) and steers the conversation toward specific technical concepts.
+- **Adaptive Questioning**: Generates 3-5 technical questions tailored to the candidate's specific experience level (Junior, Mid-level, Senior).
+- **Real-time Evaluation**: Provides instant constructive feedback on technical responses.
+- **Interview Persistence**: Automatically saves interview transcripts in structured JSON format for easy ATS integration.
+- **Transcript Downloads**: Allows candidates or recruiters to download the interview session immediately.
 
-## 📋 Prerequisites
+---
 
-- Python 3.7 or higher
-- OpenAI API key (optional - chatbot works in offline mode without it)
+## Screenshots
 
-## 🚀 Installation
+<div align="center">
+  <img src="assets/screenshot-1.png" width="400" alt="Chat Interface">
+  <img src="assets/screenshot-2.png" width="400" alt="Application Features">
+  <p><em>SkillHunt Chat Interface and Features</em></p>
+</div>
 
-1. **Clone the repository**:
+---
+
+## Technology Stack
+
+- **Frontend**: [Streamlit](https://streamlit.io/)
+- **LLM Providers**: [Google Gemini](https://ai.google.dev/), [Groq](https://groq.com/)
+- **Core Library**: [google-genai](https://pypi.org/project/google-genai/), [groq](https://pypi.org/project/groq/)
+- **Environment**: Python 3.8+, `python-dotenv`
+
+---
+
+## Quick Start
+
+### 1. Installation
+
 ```bash
+# Clone the repository
 git clone https://github.com/Pallavi-Pandey/Skill-Hunt.git
 cd Skill-Hunt
-```
 
-2. **Install dependencies**:
-```bash
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-3. **Configure API key** (optional but recommended):
+### 2. Configuration
+
+Create a `.env` file from the template:
+
 ```bash
 cp .env.example .env
-# Edit .env and add your OpenAI API key
 ```
 
-## 🎯 Usage
+Add your API keys to `.env`:
 
-### Running the Chatbot
+```env
+GEMINI_API_KEY=your_gemini_api_key
+GROQ_API_KEY=your_groq_api_key
+```
 
-Simply run the main chatbot script:
+### 3. Run the Application
 
 ```bash
-python chatbot.py
+streamlit run app.py
 ```
 
-### Interview Flow
+---
 
-1. **Basic Information Collection**:
-   - Full name
-   - Email address
-   - Phone number
-   - Years of professional experience
-   - Preferred role
+## Project Structure
 
-2. **Tech Stack Declaration**:
-   - Candidate lists their technical skills
-   - System recognizes various technologies across categories:
-     - Frontend: React, Angular, Vue.js, etc.
-     - Backend: Node.js, Python, Java, etc.
-     - Database: MongoDB, PostgreSQL, MySQL, etc.
-     - DevOps: Docker, Kubernetes, AWS, etc.
-     - Mobile: React Native, Flutter, iOS, Android, etc.
-     - Data: TensorFlow, PyTorch, Pandas, etc.
-
-3. **Technical Interview**:
-   - 3-5 dynamically generated questions based on tech stack
-   - Questions adapted to experience level
-   - Real-time AI feedback on responses (when LLM is enabled)
-
-4. **Summary & Evaluation**:
-   - AI-generated assessment of candidate's performance
-   - Key strengths and areas for improvement
-   - Hiring recommendation
-
-5. **Data Storage**:
-   - Interview saved to `interviews/` directory
-   - JSON format for easy processing
-
-## 📁 Project Structure
-
-```
+```text
 Skill-Hunt/
-├── chatbot.py           # Main chatbot orchestration
-├── candidate.py         # Candidate data model
-├── llm_service.py       # LLM integration service
-├── config.py            # Configuration settings
-├── requirements.txt     # Python dependencies
-├── .env.example         # Environment variable template
-├── .gitignore          # Git ignore rules
-├── README.md           # This file
-└── interviews/         # Saved interview data (created at runtime)
+├── app.py              # Main Streamlit application & UI logic
+├── llm_service.py      # LLM abstraction layer (Gemini/Groq)
+├── config.py           # Centralized configuration & tech stacks
+├── utils.py            # Helper functions (save, exit, steering)
+├── requirements.txt    # Project dependencies
+├── .env.example        # Environment template
+└── interviews/         # Saved interview transcripts (JSON)
 ```
 
-## ⚙️ Configuration
+---
 
-Edit `config.py` to customize:
+## Customization
 
-- **MIN_QUESTIONS_PER_STACK**: Minimum questions per interview (default: 3)
-- **MAX_QUESTIONS_PER_STACK**: Maximum questions per interview (default: 5)
-- **TECH_STACKS**: Add or modify supported technologies
-- **DIFFICULTY_LEVELS**: Adjust experience level classifications
+You can easily customize the screening process in `config.py`:
 
-Edit `.env` to configure:
+- **Question Count**: Adjust `MIN_QUESTIONS_PER_STACK` and `MAX_QUESTIONS_PER_STACK`.
+- **Supported Tech**: Add new categories or technologies to the `TECH_STACKS` dictionary.
+- **Experience Levels**: Modify the `DIFFICULTY_LEVELS` list.
 
-- **OPENAI_API_KEY**: Your OpenAI API key
-- **OPENAI_MODEL**: Model to use (default: gpt-3.5-turbo)
+---
 
-## 🎓 LLM Integration
+## Troubleshooting
 
-The chatbot demonstrates understanding of Large Language Models through:
+### API Connection Issues
+- **Gemini Key Missing**: Ensure `GEMINI_API_KEY` is set in `.env`.
+- **Groq Key Missing**: Ensure `GROQ_API_KEY` is set in `.env`.
+- The application will show a warning in the sidebar if keys are not detected.
 
-1. **Prompt Engineering**: Carefully crafted prompts for question generation and evaluation
-2. **Context Management**: Maintains conversation context and candidate information
-3. **Temperature Control**: Uses appropriate temperature settings for different tasks
-4. **Error Handling**: Graceful fallback when LLM is unavailable
-5. **Response Processing**: Parses and cleans LLM outputs
+### Dependency Errors
+- If you see `ModuleNotFoundError`, run `pip install -r requirements.txt`.
+- Ensure you are using Python 3.8+.
 
-### With LLM (Recommended):
-- Dynamic, personalized questions
-- Real-time response evaluation
-- Comprehensive hiring recommendations
-- Context-aware follow-up questions
+### Port Conflicts
+- By default, Streamlit runs on port 8501. If it's occupied, use:
+  ```bash
+  streamlit run app.py --server.port 8502
+  ```
 
-### Without LLM (Offline Mode):
-- Preset questions based on tech stack
-- Basic data collection
-- Manual review required
+---
 
-## 📊 Example Interview
+## License
 
-```
-   Welcome to TalentScout Hiring Assistant   
+This project is created for educational purposes. Feel free to use and extend!
 
-Hello! I'm your AI-powered hiring assistant.
-I'll help screen your application for technology positions.
-Let's get started!
+## Author
 
---- Basic Information ---
+**Pallavi Pandey** - [GitHub](https://github.com/Pallavi-Pandey)
 
-What's your full name? John Doe
-What's your email address? john.doe@email.com
-What's your phone number? +1234567890
-How many years of professional experience do you have? 4
-What role are you applying for? Full Stack Developer
+---
+<p align="center">Made for more efficient hiring</p>
 
-Thank you, John! Let's talk about your technical skills.
-
---- Technical Skills ---
-
-Enter your tech stack (comma-separated):
-> React, Node.js, MongoDB, Docker, AWS
-
-Great! I see you work with: React, Node.js, MongoDB, Docker, AWS
-Now I'll ask you some technical questions based on your skills.
-
---- Technical Interview ---
-
-Based on your 4 years of experience, I'll ask mid-level questions.
-
-Generating personalized questions using AI...
-
-Question 1/3:
-Explain how React's Virtual DOM works and why it improves performance...
-
-[Interview continues...]
-```
-
-## 🔒 Security & Privacy
-
-- API keys stored in `.env` (not committed to git)
-- Interview data stored locally
-- No data sent to third parties except OpenAI API (when enabled)
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📝 License
-
-This project is created for educational purposes as part of an assignment.
-
-## 👥 Author
-
-Developed for TalentScout Recruitment Agency
-
-## 🐛 Troubleshooting
-
-### "OpenAI API key not found"
-- Make sure you've created a `.env` file
-- Add your API key: `OPENAI_API_KEY=your_key_here`
-- The chatbot will still work in offline mode without it
-
-### "Module not found" error
-- Run `pip install -r requirements.txt`
-- Ensure you're using Python 3.7+
-
-### Questions seem generic
-- Ensure your OpenAI API key is properly configured
-- Check your API key has available credits
-- The chatbot uses fallback questions when LLM is unavailable
-
-## 🚀 Future Enhancements
-
-- Web-based UI interface
-- Video interview capabilities
-- Integration with ATS (Applicant Tracking Systems)
-- Multi-language support
-- Advanced analytics dashboard
-- Resume parsing integration

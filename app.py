@@ -1,5 +1,5 @@
 """
-TalentScout Hiring Assistant Chatbot
+SkillHunt Hiring Assistant Chatbot
 A Streamlit-based intelligent chatbot for initial candidate screening.
 """
 
@@ -20,7 +20,7 @@ MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
 ENDING_KEYWORDS = ["goodbye", "bye", "exit", "quit", "end", "stop", "no thanks", "done"]
 
 # System prompt for the chatbot
-SYSTEM_PROMPT = """You are a professional Hiring Assistant chatbot for TalentScout, a recruitment agency specializing in technology placements. Your role is to conduct initial candidate screening by:
+SYSTEM_PROMPT = """You are a professional Hiring Assistant chatbot for SkillHunt, a recruitment agency specializing in technology placements. Your role is to conduct initial candidate screening by:
 
 1. Greeting candidates warmly and explaining your purpose
 2. Gathering essential candidate information:
@@ -75,7 +75,7 @@ def initialize_session_state():
 
 def get_greeting():
     """Generate initial greeting message."""
-    return """Hello! 👋 Welcome to TalentScout's Hiring Assistant!
+    return """Hello! Welcome to SkillHunt's Hiring Assistant!
 
 I'm here to help with your initial candidate screening for technology positions. I'll gather some essential information about you and then ask a few technical questions based on your expertise.
 
@@ -91,7 +91,7 @@ def check_ending_keyword(user_input):
 
 def get_farewell_message():
     """Generate farewell message."""
-    return """Thank you for your time! 🎉
+    return """Thank you for your time!
 
 Your information has been recorded. Our recruitment team will review your profile and technical responses. You can expect to hear from us within 3-5 business days via email.
 
@@ -99,7 +99,7 @@ If your profile matches our current openings, we'll reach out to schedule a deta
 
 Best of luck with your job search! Feel free to return anytime if you have additional information to share.
 
-Goodbye! 👋"""
+Goodbye!"""
 
 
 def get_bot_response(user_message):
@@ -108,7 +108,7 @@ def get_bot_response(user_message):
     llm_service = LLMService(provider=st.session_state.provider)
     
     if not llm_service.is_available():
-        return f"⚠️ {st.session_state.provider.capitalize()} API key is not configured. Please check your .env file."
+        return f"Warning: {st.session_state.provider.capitalize()} API key is not configured. Please check your .env file."
     
     try:
         # Tech stack steering
@@ -158,7 +158,7 @@ def get_bot_response(user_message):
 
     except Exception as e:
         error_msg = str(e)
-        return f"⚠️ API error: {error_msg}"
+        return f"Warning: API error: {error_msg}"
 
 
 def display_chat_interface():
@@ -209,7 +209,7 @@ def display_chat_interface():
 def display_sidebar():
     """Display sidebar with information and options."""
     with st.sidebar:
-        st.title("🎯 TalentScout")
+        st.title("SkillHunt")
         st.subheader("Hiring Assistant")
         
         st.markdown("---")
@@ -227,9 +227,9 @@ def display_sidebar():
         ### About
         This intelligent chatbot assists with initial candidate screening by:
         
-        ✅ Collecting candidate information  
-        ✅ Generating technical questions  
-        ✅ Assessing tech stack proficiency  
+        Collecting candidate information  
+        Generating technical questions  
+        Assessing tech stack proficiency  
         
         ### Tips
         - Be specific about your tech stack
@@ -241,7 +241,7 @@ def display_sidebar():
         
         # Controls
         st.subheader("Controls")
-        if st.button("🗑️ Clear Chat"):
+        if st.button("Clear Chat"):
             st.session_state.messages = []
             st.session_state.conversation_ended = False
             # Re-add greeting
@@ -252,13 +252,13 @@ def display_sidebar():
             })
             st.rerun()
             
-        if st.button("💾 Download Transcript"):
+        if st.button("Download Transcript"):
             if st.session_state.messages:
                 filename = save_interview(st.session_state.messages)
                 st.success(f"Saved transcript!")
                 with open(filename, "r") as f:
                     st.download_button(
-                        label="📥 Click to Download JSON",
+                        label="Click to Download JSON",
                         data=f,
                         file_name=os.path.basename(filename),
                         mime="application/json"
@@ -272,14 +272,14 @@ def display_sidebar():
         from config import Config
         if st.session_state.provider == "gemini":
             if Config.GEMINI_API_KEY:
-                st.success("✅ Gemini Connected")
+                st.success("Gemini Connected")
             else:
-                st.error("❌ Gemini Key Missing")
+                st.error("Gemini Key Missing")
         else: # groq
             if Config.GROQ_API_KEY:
-                st.success("✅ Groq Connected")
+                st.success("Groq Connected")
             else:
-                st.error("❌ Groq Key Missing")
+                st.error("Groq Key Missing")
         
         st.markdown("---")
         st.markdown(f"**Model:** `{Config.GEMINI_MODEL if st.session_state.provider == 'gemini' else Config.GROQ_MODEL}`")
@@ -291,8 +291,8 @@ def main():
     
     # Page configuration
     st.set_page_config(
-        page_title="TalentScout - Hiring Assistant",
-        page_icon="🎯",
+        page_title="SkillHunt - Hiring Assistant",
+        page_icon="skillhunt_logo.png",
         layout="wide",
         initial_sidebar_state="expanded"
     )
@@ -320,7 +320,7 @@ def main():
     initialize_session_state()
     
     # Main title
-    st.title("💼 TalentScout Hiring Assistant")
+    st.title("SkillHunt Hiring Assistant")
     st.markdown("*Your AI-powered recruitment companion*")
     st.markdown("---")
     

@@ -50,7 +50,7 @@ class LLMService:
         
         tech_list = ", ".join(tech_stack)
         
-        prompt = f"""As a technical recruiter for TalentScout, generate {num_questions} relevant technical interview questions for a {experience_level} level candidate with the following tech stack: {tech_list}.
+        prompt = f"""As a technical recruiter for SkillHunt, generate {num_questions} relevant technical interview questions for a {experience_level} level candidate with the following tech stack: {tech_list}.
 
 Requirements:
 1. Questions should be appropriate for {experience_level} level

@@ -1,5 +1,5 @@
 """
-Configuration module for TalentScout Hiring Assistant
+Configuration module for SkillHunt Hiring Assistant
 """
 import os
 from dotenv import load_dotenv
