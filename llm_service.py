@@ -2,7 +2,7 @@
 LLM Service module for interacting with Google Gemini API
 """
 from typing import List, Dict
-import google.generativeai as genai
+from google import genai
 from groq import Groq
 from config import Config
 
@@ -16,8 +16,7 @@ class LLMService:
         self.groq_client = None
         
         if Config.GEMINI_API_KEY:
-            genai.configure(api_key=Config.GEMINI_API_KEY)
-            self.gemini_client = genai.GenerativeModel(Config.GEMINI_MODEL)
+            self.gemini_client = genai.Client(api_key=Config.GEMINI_API_KEY)
             
         if Config.GROQ_API_KEY:
             self.groq_client = Groq(api_key=Config.GROQ_API_KEY)
@@ -64,9 +63,10 @@ Return only the questions, numbered 1 through {num_questions}."""
 
         try:
             if self.provider == "gemini":
-                response = self.gemini_client.generate_content(
-                    prompt,
-                    generation_config=genai.types.GenerationConfig(
+                response = self.gemini_client.models.generate_content(
+                    model=Config.GEMINI_MODEL,
+                    contents=prompt,
+                    config=genai.types.GenerateContentConfig(
                         temperature=0.7,
                         max_output_tokens=1000
                     )
@@ -127,9 +127,10 @@ Provide a brief, constructive evaluation (2-3 sentences) covering:
 
         try:
             if self.provider == "gemini":
-                response = self.gemini_client.generate_content(
-                    prompt,
-                    generation_config=genai.types.GenerationConfig(
+                response = self.gemini_client.models.generate_content(
+                    model=Config.GEMINI_MODEL,
+                    contents=prompt,
+                    config=genai.types.GenerateContentConfig(
                         temperature=0.5,
                         max_output_tokens=200
                     )
@@ -181,9 +182,10 @@ Technical Interview Responses:
 
         try:
             if self.provider == "gemini":
-                response = self.gemini_client.generate_content(
-                    prompt,
-                    generation_config=genai.types.GenerationConfig(
+                response = self.gemini_client.models.generate_content(
+                    model=Config.GEMINI_MODEL,
+                    contents=prompt,
+                    config=genai.types.GenerateContentConfig(
                         temperature=0.5,
                         max_output_tokens=500
                     )

@@ -57,7 +57,13 @@ def initialize_session_state():
     if "messages" not in st.session_state:
         st.session_state.messages = []
         st.session_state.conversation_ended = False
-        st.session_state.provider = "gemini"
+        
+        # Smart default provider (Prioritizing Groq due to Gemini quota limits)
+        from config import Config
+        if Config.GROQ_API_KEY:
+            st.session_state.provider = "groq"
+        else:
+            st.session_state.provider = "gemini"
         
         # Add greeting message
         greeting = get_greeting()
