@@ -92,14 +92,6 @@ Return only the questions, numbered 1 through {num_questions}."""
     def evaluate_response(self, question: str, answer: str, tech_stack: List[str]) -> str:
         """
         Evaluate a candidate's response to a technical question
-        
-        Args:
-            question: The technical question asked
-            answer: The candidate's answer
-            tech_stack: Candidate's tech stack for context
-            
-        Returns:
-            Evaluation feedback
         """
         if not self.is_available():
             return "Response recorded. (LLM evaluation unavailable - please configure GEMINI_API_KEY)"
