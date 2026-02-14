@@ -36,14 +36,6 @@ class LLMService:
                                      num_questions: int = 5) -> List[str]:
         """
         Generate technical questions based on candidate's tech stack
-        
-        Args:
-            tech_stack: List of technologies the candidate knows
-            experience_level: junior, mid-level, or senior
-            num_questions: Number of questions to generate
-            
-        Returns:
-            List of technical questions
         """
         if not self.is_available():
             return self._get_fallback_questions(tech_stack, experience_level)
