@@ -36,6 +36,14 @@ class LLMService:
                                      num_questions: int = 5) -> List[str]:
         """
         Generate technical questions based on candidate's tech stack
+        
+        Args:
+            tech_stack: List of technologies the candidate knows
+            experience_level: junior, mid-level, or senior
+            num_questions: Number of questions to generate
+            
+        Returns:
+            List of technical questions
         """
         if not self.is_available():
             return self._get_fallback_questions(tech_stack, experience_level)
@@ -92,6 +100,14 @@ Return only the questions, numbered 1 through {num_questions}."""
     def evaluate_response(self, question: str, answer: str, tech_stack: List[str]) -> str:
         """
         Evaluate a candidate's response to a technical question
+        
+        Args:
+            question: The technical question asked
+            answer: The candidate's answer
+            tech_stack: Candidate's tech stack for context
+            
+        Returns:
+            Evaluation feedback
         """
         if not self.is_available():
             return "Response recorded. (LLM evaluation unavailable - please configure GEMINI_API_KEY)"
