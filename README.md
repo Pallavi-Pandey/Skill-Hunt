@@ -1,4 +1,4 @@
-# SkillHunt - Intelligent Hiring Assistant
+# Skill Hunt App
 
 An AI-powered recruitment companion that automates initial candidate screening for technology positions. Built with Streamlit and powered by advanced LLMs (Gemini & Groq), SkillHunt helps recruitment teams gather candidate info, assess technical proficiency, and generate insightful summaries.
 
